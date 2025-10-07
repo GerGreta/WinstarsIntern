@@ -2,62 +2,60 @@ import os
 import torch
 from torchvision import models, transforms
 from PIL import Image
+from pathlib import Path
 
-
-# Settings / Configuration
+# Device configuration
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Relative path to model to make it cross-platform
-MODEL_PATH = os.path.join("Test_2", "models", "image_model.pth")
+# Path to the model checkpoint
 
 
-# ResNet18 Model
-# Load a pre-trained ResNet18 model
-model = models.resnet18(pretrained=True)
+# Path relative to this file
+MODEL_PATH = Path(__file__).parent.parent / "models" / "image_model.pth"
 
-# Replace the final fully connected layer to match the number of classes (10)
-model.fc = torch.nn.Linear(model.fc.in_features, 10)
+# Check if the model file exists
+if not os.path.exists(MODEL_PATH):
+    raise FileNotFoundError(f"Model checkpoint not found at '{MODEL_PATH}'")
 
-# Load weights from checkpoint only if the file exists
-if os.path.exists(MODEL_PATH):
-    checkpoint = torch.load(MODEL_PATH, map_location=DEVICE)
-    model.load_state_dict(checkpoint['model_state_dict'])
-    model.to(DEVICE)
-    model.eval()  # Set model to evaluation mode
-else:
-    print(f"WARNING: Model checkpoint not found at '{MODEL_PATH}'. CV predictions will be random.")
-    model = None  # Set model to None to avoid using it
+# Load the checkpoint
+checkpoint = torch.load(MODEL_PATH, map_location=DEVICE)
 
+# Create a ResNet18 model and adjust the final fully connected layer
+num_classes = len(checkpoint['class_names'])
+model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
 
-# Image transformations
+# Load the trained weights
+model.load_state_dict(checkpoint['model_state_dict'])
+model.to(DEVICE)
+model.eval()  # Set model to evaluation mode
+
+# Load class names from the checkpoint
+CLASSES = checkpoint['class_names']
+
+# Define image transformations (must match training)
 transform = transforms.Compose([
-    transforms.Resize((224, 224)),  # Resize image to 224x224
-    transforms.ToTensor()  # Convert image to PyTorch tensor
+    transforms.Resize((128, 128)),  # Resize to the same size as during training
+    transforms.ToTensor(),           # Convert image to PyTorch tensor
+    transforms.Normalize([0.485, 0.456, 0.406],  # Normalize using ImageNet mean
+                         [0.229, 0.224, 0.225])  # and standard deviation
 ])
 
-# Animal classes
-CLASSES = ['butterfly', 'cat', 'chicken', 'cow', 'dog',
-           'elephant', 'horse', 'sheep', 'spider', 'squirrel']
-
-
-
-# Image classification function
 def classify_image(image_path: str) -> str:
-    #Classify an image using the pre-trained model.
-
-    if model is None:
-        return "unknown"
-
-    # Open the image and ensure it's in RGB mode
+    """
+    Classifies an image and returns the predicted class name.
+    Always returns a valid class from CLASSES.
+    """
+    # Open the image and convert to RGB
     img = Image.open(image_path).convert("RGB")
 
     # Apply transformations and add batch dimension
     img_t = transform(img).unsqueeze(0).to(DEVICE)
 
-    # Forward pass without computing gradients
+    # Perform inference without computing gradients
     with torch.no_grad():
         outputs = model(img_t)
-        _, pred = torch.max(outputs, 1)  # Get predicted class index
+        _, pred = torch.max(outputs, 1)  # Get the index of the max probability
 
-    # Return class label
+    # Return the class name corresponding to the predicted index
     return CLASSES[pred.item()]
