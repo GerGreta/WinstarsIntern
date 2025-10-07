@@ -34,7 +34,7 @@ Test_1/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/GerGreta/Winstars_Intern.git
+git clone https://github.com/GerGreta/WinstarsIntern.git
 cd Winstars_Intern
 ```
 2. Create a virtual environment:
