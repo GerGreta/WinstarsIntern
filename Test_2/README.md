@@ -59,15 +59,15 @@ pip install -r requirements.txt
 
 5. Downloading Large Files (Git LFS)
 
-This project uses Git Large File Storage (LFS) to store the trained NER model (model.safetensors, ~410 MB).
-Make sure you have Git LFS installed so the model downloads automatically after cloning:
+  This project uses Git Large File Storage (LFS) to store the trained NER model (model.safetensors, ~410 MB).
+  Make sure you have Git LFS installed so the model downloads automatically after cloning:
 ```
 git lfs install
 git lfs pull
 ```
-If you skip this step, the model file will not be available locally — only a small text pointer will appear instead.
+  If you skip this step, the model file will not be available locally — only a small text pointer will appear instead.
 
-5. Ensure your data/ folder contains the images and ner_data.json.
+6. Ensure your data/ folder contains the images and ner_data.json.
 
 ## How to Use
 1. Run CV Model Training
