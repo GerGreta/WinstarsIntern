@@ -40,3 +40,4 @@ build/
 models/ner_model/
 .idea
 
+ner_cv_demo_2.ipynb
