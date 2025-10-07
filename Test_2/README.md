@@ -98,6 +98,14 @@ Open notebooks/ner_cv_demo.ipynb in Jupyter or PyCharm to see:
 - Matching results
 - Images displayed inline
 
+## Demo Limitations
+
+Currently, the pipeline demo does not accept arbitrary user input for the text.  
+Instead, the text describing the animal is generated automatically from the class list for demonstration purposes.  
+
+This means that the "text" is not truly user-provided, so in a real scenario, the NER model should be tested with actual user input.
+
+
 ## Notes
 
 All paths in the code use relative paths, so the project can run on any computer after cloning.
