@@ -71,6 +71,8 @@ git lfs pull
 
 6. Ensure your data/ folder contains the images and ner_data.json.
 
+апвтп
+
 ## How to Use
 1. Run CV Model Training
 ```
