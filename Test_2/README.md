@@ -85,6 +85,10 @@ python src/ner_train.py
 python src/pipeline.py
 ```
 4. Demonstration Notebook
+```
+jupyter notebook
+```
+
 Open notebooks/ner_cv_demo.ipynb in Jupyter or PyCharm to see:
 - Sample text and image inputs
 - Detected animals in text
