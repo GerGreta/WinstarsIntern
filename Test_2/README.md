@@ -1,4 +1,4 @@
-# AnimalNER_CV_ModelDemo
+# Animal_NER_CV_Model_Demo
 
 ## Overview
 
