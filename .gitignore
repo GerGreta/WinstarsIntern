@@ -34,10 +34,8 @@ dist/
 build/
 
 # Большие модели
-*.pth
-*.pht
 *.safetensors
-models/
+
 
 models/ner_model/
 .idea
