@@ -1,103 +1,77 @@
+import os
 import random
 from pathlib import Path
 from PIL import Image
 import matplotlib.pyplot as plt
-import torch
-from torchvision import models, transforms
+
+# Add src folder to sys.path so we can import custom modules
+import sys
+ROOT = Path(__file__).parent.parent  # project root
+SRC_PATH = ROOT / "src"
+if str(SRC_PATH) not in sys.path:
+    sys.path.append(str(SRC_PATH))
+
+# Import custom functions
+from ner_inference import extract_animals
+from cv_inference import classify_image
+
+# Path to the images folder
+DATA_DIR = ROOT / "data" / "images"
+classes = [d for d in os.listdir(DATA_DIR) if os.path.isdir(os.path.join(DATA_DIR, d))]
 
 # -----------------------------
-# 1️⃣ NER: Simple dictionary lookup
+# Pipeline function
 # -----------------------------
-ANIMALS = ['butterfly', 'cat', 'chicken', 'cow', 'dog',
-           'elephant', 'horse', 'sheep', 'spider', 'squirrel']
-
-def extract_animals(text: str):
+def pipeline(text: str = None, show_image: bool = True) -> bool:
     """
-    Extract animal names from text using a simple dictionary lookup.
+    Process a text description and a random image, compare them, and return True if match.
+
+    Args:
+        text (str): User-provided text describing the animal. If None, input() will be used.
+        show_image (bool): Whether to display the image using matplotlib.
+
+    Returns:
+        bool: True if the animal in the image matches the text, False otherwise.
     """
-    text_lower = text.lower()
-    found_animals = [animal for animal in ANIMALS if animal in text_lower]
-    return found_animals
+    # 1️⃣ Get text input from user if not provided
+    if text is None:
+        text = input("Enter text describing the animal: ")
 
-# -----------------------------
-# 2️⃣ CV: ResNet18 inference
-# -----------------------------
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # 2️⃣ Select a random image
+    image_class = random.choice(classes)
+    folder_path = os.path.join(DATA_DIR, image_class)
+    img_file = random.choice(os.listdir(folder_path))
+    img_path = os.path.join(folder_path, img_file)
 
-MODEL_PATH = Path(__file__).parent.parent / "models" / "image_model.pth"
-checkpoint = torch.load(MODEL_PATH, map_location=DEVICE)
+    # 3️⃣ Display the image
+    if show_image:
+        img = Image.open(img_path).convert("RGB")
+        plt.imshow(img)
+        plt.axis('off')
+        plt.title(f"Random image from folder: {image_class}")
+        plt.show()
 
-# Load ResNet18 model
-model = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
-num_classes = len(checkpoint['class_names'])
-model.fc = torch.nn.Linear(model.fc.in_features, num_classes)
-model.load_state_dict(checkpoint['model_state_dict'])
-model.to(DEVICE)
-model.eval()
+    # 4️⃣ Extract animals from text (NER)
+    animals_extracted = extract_animals(text)
+    print("Text:", text)
+    print("Extracted from text:", animals_extracted)
 
-CLASSES = checkpoint['class_names']
+    # 5️⃣ Classify the animal in the image (CV)
+    animal_from_image = classify_image(img_path)
+    print("Predicted from image:", animal_from_image)
 
-transform = transforms.Compose([
-    transforms.Resize((128, 128)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406],
-                         [0.229, 0.224, 0.225])
-])
-
-def classify_image(image_path: Path) -> str:
-    """
-    Classify an image and return predicted animal class.
-    """
-    img = Image.open(image_path).convert("RGB")
-    img_t = transform(img).unsqueeze(0).to(DEVICE)
-    with torch.no_grad():
-        outputs = model(img_t)
-        _, pred = torch.max(outputs, 1)
-    return CLASSES[pred.item()]
-
-# -----------------------------
-# 3️⃣ Pipeline function
-# -----------------------------
-DATA_DIR = Path(__file__).parent.parent / "data" / "images"
-classes = [d.name for d in DATA_DIR.iterdir() if d.is_dir()]
-
-def animal_pipeline(text: str, image_path: Path = None) -> bool:
-    """
-    Full pipeline: NER + CV.
-    If image_path is None, choose a random image from dataset.
-    Returns True if text matches image, False otherwise.
-    """
-    # Extract animals from text
-    animals_from_text = extract_animals(text)
-    if not animals_from_text:
-        print("No animals found in text.")
-        return False
-
-    # Choose random image if none provided
-    if image_path is None:
-        image_class = random.choice(classes)
-        image_path = random.choice(list((DATA_DIR / image_class).iterdir()))
-
-    # Classify image
-    predicted_animal = classify_image(image_path)
-
-    # Compare text vs image
-    match = any(predicted_animal.lower() in a.lower() for a in animals_from_text)
-
-    # Show image with result
-    img = Image.open(image_path).convert("RGB")
-    plt.imshow(img)
-    plt.axis("off")
-    plt.title(f"Text: '{text}'\nPredicted: {predicted_animal} | Match: {match}")
-    plt.show(block=True)
+    # 6️⃣ Compare text vs image
+    match = any(animal_from_image.lower() in a.lower() for a in animals_extracted)
+    print("Match:", match)
+    print("-" * 50)
 
     return match
 
 # -----------------------------
-# 4️⃣ Example test
+# Demo run
 # -----------------------------
 if __name__ == "__main__":
-    for _ in range(5):
-        text_class = random.choice(classes)
-        text = f"There is a {text_class} in the picture"
-        animal_pipeline(text)  # image is random
+    num_examples = 3  # number of demo runs
+    for i in range(num_examples):
+        print(f"Demo example {i+1}/{num_examples}")
+        pipeline()
