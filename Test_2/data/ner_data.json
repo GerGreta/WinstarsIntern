@@ -1,0 +1,12 @@
+[
+  {"text": "There is a cat in the picture", "entities": [[11, 14, "ANIMAL"]]},
+  {"text": "I can see a dog", "entities": [[12, 15, "ANIMAL"]]},
+  {"text": "A cow is standing in the field", "entities": [[2, 5, "ANIMAL"]]},
+  {"text": "Look at that elephant", "entities": [[13, 21, "ANIMAL"]]},
+  {"text": "The picture shows a horse", "entities": [[20, 25, "ANIMAL"]]},
+  {"text": "A lion is sleeping", "entities": [[2, 6, "ANIMAL"]]},
+  {"text": "A tiger is running", "entities": [[2, 7, "ANIMAL"]]},
+  {"text": "The zebra is grazing", "entities": [[4, 9, "ANIMAL"]]},
+  {"text": "I can see a bear in the forest", "entities": [[12, 16, "ANIMAL"]]},
+  {"text": "There is a sheep near the barn", "entities": [[10, 15, "ANIMAL"]]}
+]
