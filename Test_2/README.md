@@ -44,13 +44,28 @@ python -m venv .venv
 ```
 
 3. Activate the environment:
-- Windows PowerShell: .\.venv\Scripts\Activate.ps1
-- Bash/Linux/Mac: source .venv/bin/activate
+```
+# Windows PowerShell
+.\.venv\Scripts\Activate.ps1
+
+# Bash/Linux/Mac
+source .venv/bin/activate
+```
 
 4. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
+5. Downloading Large Files (Git LFS)
+
+This project uses Git Large File Storage (LFS) to store the trained NER model (model.safetensors, ~410 MB).
+Make sure you have Git LFS installed so the model downloads automatically after cloning:
+```
+git lfs install
+git lfs pull
+```
+If you skip this step, the model file will not be available locally — only a small text pointer will appear instead.
 
 5. Ensure your data/ folder contains the images and ner_data.json.
 
